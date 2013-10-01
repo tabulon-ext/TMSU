@@ -33,8 +33,6 @@ import (
 )
 
 type FuseVfs struct {
-	pathfs.FileSystem
-
 	store     *storage.Storage
 	mountPath string
 	server    *fuse.Server
@@ -70,6 +68,10 @@ func (vfs FuseVfs) Unmount() {
 
 func (vfs FuseVfs) Serve() {
 	vfs.server.Serve()
+}
+
+func (vfs FuseVfs) SetDebug(debug bool) {
+	vfs.SetDebug(debug)
 }
 
 func (vfs FuseVfs) Access(name string, mode uint32, context *fuse.Context) fuse.Status {
@@ -156,6 +158,16 @@ func (vfs FuseVfs) Mknod(name string, mode uint32, dev uint32, context *fuse.Con
 	return fuse.ENOSYS
 }
 
+func (vfs FuseVfs) OnMount(nodeFs *pathfs.PathNodeFs) {
+	log.Infof("BEGIN OnMount()")
+	defer log.Infof("END OnMount()")
+}
+
+func (vfs FuseVfs) OnUnmount() {
+	log.Infof("BEGIN OnUnmount()")
+	defer log.Infof("END OnUnmount()")
+}
+
 func (vfs FuseVfs) Open(name string, flags uint32, context *fuse.Context) (nodefs.File, fuse.Status) {
 	log.Infof("BEGIN Open(%v)", name)
 	defer log.Infof("END Open(%v)", name)
@@ -224,11 +236,15 @@ func (vfs FuseVfs) SetXAttr(name string, attr string, data []byte, flags int, co
 	return fuse.ENOSYS
 }
 
-func (vfs FuseVfs) StatFs(name string) *nodefs.StatfsOut {
+func (vfs FuseVfs) StatFs(name string) *fuse.StatfsOut {
 	log.Infof("BEGIN StatFs(%v)", name)
 	defer log.Infof("END StatFs(%v)", name)
 
-	return &nodefs.StatfsOut{}
+	return &fuse.StatfsOut{}
+}
+
+func (vfs FuseVfs) String() string {
+	return "tmsu"
 }
 
 func (vfs FuseVfs) Symlink(value string, linkName string, context *fuse.Context) fuse.Status {
@@ -278,6 +294,10 @@ func (vfs FuseVfs) Unlink(name string, context *fuse.Context) fuse.Status {
 	}
 
 	return fuse.OK
+}
+
+func (vfs FuseVfs) Utimens(name string, Atime *time.Time, Mtime *time.Time, context *fuse.Context) (code fuse.Status) {
+	return fuse.ENOSYS
 }
 
 // non-exported
