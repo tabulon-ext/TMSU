@@ -22,11 +22,28 @@ ARCH=$(shell uname -m)
 DIST_NAME=tmsu-$(ARCH)-$(VER)
 DIST_DIR=$(DIST_NAME)
 DIST_FILE=$(DIST_NAME).tgz
+GODEPS=\
+  golang.org/x/crypto/blake2b \
+  github.com/mattn/go-sqlite3 \
+  github.com/hanwen/go-fuse
 
 export GOPATH ?= $(PREFIX)/lib/go:$(PREFIX)/share/gocode
 export GOPATH := $(CURDIR):$(GOPATH)
 
-all: clean compile dist test
+all: setup clean compile dist test
+
+.PHONY: setup
+setup: setup-begin $(GODEPS)
+
+.PHONY: setup-begin
+setup-begin:
+	@echo
+	@echo "INSTALLING GOLANG PKG DEPENDENCIES (as needed)"
+	@echo
+
+.PHONY: $(GODEPS)
+$(GODEPS): 
+	go list "$@" 1>/dev/null 2>&1 || go get -v "$@"
 
 clean:
 	@echo
